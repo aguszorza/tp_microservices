@@ -1,9 +1,8 @@
-from flask_security import UserMixin, RoleMixin
 import datetime
 from app import db
 
 
-class User(db.Document, UserMixin):
+class User(db.Document):
     meta = {'collection': 'user'}
     id_auth = db.StringField(max_length=50)
     customer_name = db.StringField(max_length=50)
