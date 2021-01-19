@@ -20,6 +20,7 @@ def register_user():
     if output.status_code >= 300:
         return output.json(), 400
     user = User()
+    user.email = request.json.get('email')
     user.birthdate = request.json.get('birthdate')
     user.customer_name = request.json.get('customer_name')
     user.role = request.json.get('role')
@@ -62,5 +63,37 @@ def update_user(user_id):
         return "error", 401
     user = User.objects(id_auth=user_id).first()
     user.update(birthdate=request.json.get('birthdate', user.birthdate), customer_name=request.json.get('customer_name', user.customer_name))
+    user.reload()
+    return user.to_json(), 200
+
+
+@app.route('/user/<user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    output = requests.get(f"{AUTHENTICATION_URL}verify_token", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
+    if output.status_code >= 300:
+        return output.json(), output.status_code
+    id = output.json()["id"]
+    admin_user = User.objects(id_auth=id).first()
+    if admin_user is None or admin_user.role != 'admin':
+        return "error", 401
+    output = requests.delete(f"{AUTHENTICATION_URL}user/{user_id}")
+    if output.status_code >= 300:
+        return '', 400
+    user = User.objects(id_auth=user_id).first()
+    user.delete()
+    return '', 204
+
+
+@app.route('/user/<user_id>/rights', methods=['PUT'])
+def update_user_rights(user_id):
+    output = requests.get(f"{AUTHENTICATION_URL}verify_token", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
+    if output.status_code >= 300:
+        return output.json(), output.status_code
+    id = output.json()["id"]
+    admin_user = User.objects(id_auth=id).first()
+    if admin_user is None or admin_user.role != 'admin':
+        return "error", 401
+    user = User.objects(id_auth=user_id).first()
+    user.update(role=request.json.get('role', user.role))
     user.reload()
     return user.to_json(), 200
