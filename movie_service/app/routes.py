@@ -37,3 +37,17 @@ def post_movie():
 def get_movie_from_id(movie_id):
     movie = Movie.objects(id=movie_id).first()
     return movie.to_json(), 200
+
+@app.route('/movie/<movie_id>', methods=['PUT'])
+def update_movie(movie_id):
+    output = requests.get(f"{AUTHENTICATION_URL}verify_token", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
+    if output.status_code >= 300:
+        return output.json(), output.status_code
+    id = output.json()["id"]
+    admin_user = User.objects(id_auth=id).first()
+    if admin_user is None or admin_user.role != 'admin':
+        return "error", 401
+    movie = Movie.objects(id=movie_id).first()
+    movie.update(**request.json)
+    movie.reload()
+    return user.to_json(), 200
