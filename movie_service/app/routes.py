@@ -3,6 +3,8 @@ from flask import jsonify, request
 import os
 import requests
 
+from app.models.movie import Movie
+
 
 AUTHENTICATION_URL = os.environ.get('AUTHENTICATION_URL')
 
@@ -15,17 +17,12 @@ def index():
 
 @app.route('/movie', methods=['GET'])
 def get_movie():
-    output = requests.get()
-    if output.status_code >= 300:
-        return output.json(), output.status_code
-    movie = Movie.objects(id_movie=output.json()["id"]).first()
-    return movie.to_json(), output.status_code
+    movies = Movie.objects().all()
+    return jsonify(movies), 200
 
 @app.route('/movie', methods=['POST'])
 def post_movie():
-    output = requests.post(f"{AUTHENTICATION_URL}register", json=request.json)
-    if output.status_code >= 300:
-        return output.json(), 400
+    # verify user
     movie = Movie()
     movie.runtime = request.json.get('runtime')
     movie.director = request.json.get('director')
@@ -33,19 +30,10 @@ def post_movie():
     movie.genre = request.json.get('genre')
     movie.launch_date = request.json.get('launch_date')
     movie.movie_title = request.json.get('movie_title')
-    movie.movie_id = output.json()["response"]["movie"]["id"]
     movie.save()
-    return output.json(), output.status_code
+    return movie.to_json(), 200
 
 @app.route('/movie/<movie_id>', methods=['GET'])
-def get_user_from_id(movie_id):
-    output = requests.get()
-    if output.status_code >= 300:
-        return output.json(), output.status_code
-    id = output.json()["id"]
-    if id != movie_id:
-        movie = Movie.objects(movie_id=id).first()
-        if movie is None or movie.role != 'admin':
-            return "error", 401
-    movie = Movie.objects(movie_id=movie_id).first()
-    return movie.to_json(), output.status_code
+def get_movie_from_id(movie_id):
+    movie = Movie.objects(id=movie_id).first()
+    return movie.to_json(), 200
