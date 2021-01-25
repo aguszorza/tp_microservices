@@ -13,3 +13,4 @@ class User(db.Document):
     role = db.StringField(max_length=255)
     language = db.StringField(max_length=255, default="french")
     favorite_genres = db.ListField(db.StringField(), default=[])
+    watched_movies = db.ListField(db.StringField(), default=[])

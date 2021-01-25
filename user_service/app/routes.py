@@ -127,3 +127,26 @@ def get_user_preference(user_id):
         return "error", 401
     user = User.objects(id_auth=user_id).first()
     return jsonify({"language": user.language, "favorite_genres": user.favorite_genres}), 200
+
+
+@app.route('/user/movie/<movie_id>/history', methods=['POST'])
+def add_movie(movie_id):
+    output = requests.get(f"{AUTHENTICATION_URL}verify_token", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
+    if output.status_code >= 300:
+        return output.json(), output.status_code
+    id = output.json()["id"]
+    user = User.objects(id_auth=id).first()
+    user.update(push__watched_movies=movie_id)
+    return "", 204
+
+
+@app.route('/user/<user_id>/movie/history', methods=['GET'])
+def get_movie_history(user_id):
+    output = requests.get(f"{AUTHENTICATION_URL}verify_token", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
+    if output.status_code >= 300:
+        return output.json(), output.status_code
+    id = output.json()["id"]
+    if id != user_id:
+        return "error", 401
+    user = User.objects(id_auth=user_id).first()
+    return jsonify({"watched_movies": user.watched_movies}), 200
