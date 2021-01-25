@@ -97,3 +97,21 @@ def update_user_rights(user_id):
     user.update(role=request.json.get('role', user.role))
     user.reload()
     return user.to_json(), 200
+
+
+@app.route('/user/<user_id>/preference', methods=['PUT'])
+def update_user_preference(user_id):
+    output = requests.get(f"{AUTHENTICATION_URL}verify_token", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
+    if output.status_code >= 300:
+        return output.json(), output.status_code
+    id = output.json()["id"]
+    if id != user_id:
+        return "error", 401
+    user = User.objects(id_auth=user_id).first()
+    data = {
+        "language": request.json.get('language', user.language),
+        "favorite_genres": request.json.get('favorite_genres', user.favorite_genres)
+    }
+    user.update(**data)
+    user.reload()
+    return user.to_json(), 200

@@ -11,3 +11,5 @@ class User(db.Document):
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
     birthdate = db.DateTimeField()
     role = db.StringField(max_length=255)
+    language = db.StringField(max_length=255, default="french")
+    favorite_genres = db.ListField(db.StringField(), default=[])
