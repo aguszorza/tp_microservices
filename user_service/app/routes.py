@@ -173,3 +173,15 @@ def get_my_movie_list(user_id):
         return "error", 401
     user = User.objects(id_auth=user_id).first()
     return jsonify({"my_list": user.my_list}), 200
+
+
+@app.route('/user/movie/<movie_id>', methods=['DELETE'])
+def delete_movie_from_my_movie_list(movie_id):
+    output = requests.get(f"{AUTHENTICATION_URL}verify_token", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
+    if output.status_code >= 300:
+        return output.json(), output.status_code
+    id = output.json()["id"]
+    user = User.objects(id_auth=id).first()
+    user.update(pull__my_list=movie_id)
+    return "", 204
+
