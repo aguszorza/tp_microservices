@@ -1,5 +1,6 @@
 from app import app
-from flask import jsonify, request
+from functools import wraps
+from flask import jsonify, request, abort
 import os
 import requests
 
@@ -7,6 +8,19 @@ from app.models.movie import Movie
 
 
 USER_URL = os.environ.get('USER_URL')
+
+
+def validate_admin_role(function):
+    @wraps(function)
+    def decorated_function(*args, **kwargs):
+        output = requests.get(f"{USER_URL}user", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
+        if output.status_code >= 300:
+            return abort(403)
+        if output.json()["role"] != "admin":
+            return abort(403)
+
+        return function(*args, **kwargs)
+    return decorated_function
 
 
 @app.route('/')
@@ -22,12 +36,8 @@ def get_movie():
 
 
 @app.route('/movie', methods=['POST'])
+@validate_admin_role
 def post_movie():
-    output = requests.get(f"{USER_URL}user", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
-    if output.status_code >= 300:
-        return output.json(), output.status_code
-    if output.json()["role"] != "admin":
-        return "error", 404
     movie = Movie()
     movie.runtime = request.json.get('runtime')
     movie.director = request.json.get('director')
@@ -46,12 +56,8 @@ def get_movie_from_id(movie_id):
 
 
 @app.route('/movie/<movie_id>', methods=['PUT'])
+@validate_admin_role
 def update_movie(movie_id):
-    output = requests.get(f"{USER_URL}user", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
-    if output.status_code >= 300:
-        return output.json(), output.status_code
-    if output.json()["role"] != "admin":
-        return "error", 404
     movie = Movie.objects(id=movie_id).first()
     movie.update(**request.json)
     movie.reload()
@@ -59,12 +65,8 @@ def update_movie(movie_id):
 
 
 @app.route('/movie/<movie_id>', methods=['DELETE'])
+@validate_admin_role
 def delete_movie(movie_id):
-    output = requests.get(f"{USER_URL}user", cookies={'session': request.cookies.get('session')})  # TODO: put it as annotation
-    if output.status_code >= 300:
-        return output.json(), output.status_code
-    if output.json()["role"] != "admin":
-        return "error", 404
     movie = Movie.objects(id=movie_id).first()
     movie.delete()
     return '', 204
