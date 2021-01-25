@@ -10,7 +10,7 @@ class User(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.utcnow)
     updated_at = db.DateTimeField(default=datetime.datetime.utcnow)
     birthdate = db.DateTimeField()
-    role = db.StringField(max_length=255)
+    role = db.StringField(max_length=255, default="admin")
     language = db.StringField(max_length=255, default="french")
     favorite_genres = db.ListField(db.StringField(), default=[])
     watched_movies = db.ListField(db.StringField(), default=[])

@@ -23,7 +23,7 @@ def register_user():
     user.email = request.json.get('email')
     user.birthdate = request.json.get('birthdate')
     user.customer_name = request.json.get('customer_name')
-    user.role = request.json.get('role')
+    user.role = request.json.get('role', 'admin')
     user.id_auth = output.json()["response"]["user"]["id"]
     user.save()
     return output.json(), output.status_code
