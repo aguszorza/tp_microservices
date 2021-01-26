@@ -1,0 +1,107 @@
+version: "3.8"
+
+services:
+    mongo-service:
+        image: mongo:latest
+        container_name: 'mongo-service'
+        volumes:
+            - mongo_database:/data/db
+        networks:
+            - custom_network
+        deploy:
+            mode: replicated
+            replicas: 1
+            
+    authentication_service:
+        image: authentication_service
+        container_name: 'authentication_service'
+        build: ./authentication_service
+        command: gunicorn --bind :5000 -w 1 api:app
+        env_file:
+            - ${BASE_PATH}/environment/authentication_service
+        ports:
+            - 5000:5000
+        depends_on:
+            - mongo-service
+        links:
+            - mongo-service
+        networks:
+            - custom_network
+        deploy:
+            mode: replicated
+            replicas: 1
+            
+    user_service:
+        image: user_service
+        container_name: 'user_service'
+        build: ./user_service
+        command: gunicorn --bind :5000 -w 1 api:app
+        env_file:
+            - ${BASE_PATH}/environment/user_service
+        ports:
+            - 5001:5000
+        depends_on:
+            - mongo-service
+            - authentication_service
+        links:
+            - mongo-service
+            - authentication_service
+        networks:
+            - custom_network
+        deploy:
+            mode: replicated
+            replicas: 1
+            
+    movie_service:
+        image: movie_service
+        container_name: 'movie_service'
+        build: ./movie_service
+        command: gunicorn --bind :5000 -w 1 api:app
+        env_file:
+            - ${BASE_PATH}/environment/movie_service
+        ports:
+            - 5002:5000
+        depends_on:
+            - mongo-service
+            - user_service
+        links:
+            - mongo-service
+            - user_service
+        networks:
+            - custom_network
+        deploy:
+            mode: replicated
+            replicas: 1
+    
+    location_service:
+        image: location_service
+        container_name: 'location_service'
+        build: ./location_service
+        command: gunicorn --bind :5000 -w 1 api:app
+        env_file:
+            - ${BASE_PATH}/environment/location_service
+        ports:
+            - 5003:5000
+        depends_on:
+            - mongo-service
+            - user_service
+            - movie_service
+        links:
+            - mongo-service
+            - user_service
+            - movie_service
+        networks:
+            - custom_network
+        deploy:
+            mode: replicated
+            replicas: 1
+
+volumes:
+    mongo_database:
+        driver_opts:
+            type: none
+            device: ${BASE_PATH}/mongo_volume
+            o: bind
+
+networks:
+    custom_network:
