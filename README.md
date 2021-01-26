@@ -60,3 +60,11 @@ use <database_name>
 db.createUser({user: "<username>", pwd: "<password>", roles: [{role: "readWrite", db: "<database_name>"}]})
 ```
 
+## Quelques endpoints
+
+* Enregistrer un utilisateur: POST vers http://localhost:5001/user avec un json {"email": "email","password": "password"}
+
+* Accéder au compte: POST vers http://localhost:5000/login avec un json {"email": "email","password": "password"}
+
+* Obtenir les films: GET vers http://localhost:5002/movie
+
