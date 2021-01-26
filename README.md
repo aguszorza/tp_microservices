@@ -22,7 +22,7 @@ On va executer 4 containers pour les 4 services et un autre container pour la ba
 
 * Dans les dossier environment créer 4 fichiers appelés authentication_service, location_service, movie_service et user_service et dans chaque fichiers définir les variables d'environnement de chaque service:
 
-`
+```terminal
 # location_service
 MONGO_DATABASE_URL=mongodb://<username>:<passsword>@mongo-service:27017/location_service
 USER_URL=http://user_service:5000/
@@ -40,14 +40,14 @@ USER_URL=http://user_service:5000/
 # user_service
 MONGO_DATABASE_URL=mongodb://<username>:<password>@mongo-service:27017/user_service
 AUTHENTICATION_URL=http://authentication_service:5000/
-`
+```
 
 * Dans le dossier root (où le fichier docker-compose.yml se trouve) executer les commandes:
 
-`
+```terminal
 sudo env BASE_PATH=<path to build folder> docker-compose build
 sudo env BASE_PATH=<path to build folder> docker-compose up
-`
+```
 
 S'il n'y a pas eu d'erreurs, les conteneurs seront créés et exécutés, et les logs seront observés dans le terminal.
 
@@ -55,8 +55,8 @@ S'il n'y a pas eu d'erreurs, les conteneurs seront créés et exécutés, et les
 
 * Executer la commande `mongo` pour entrer à mongo et pour chaque base de données (location_service, authentication_service, movie_service et user_service) executer les commandes :
 
-`
+```terminal
 use <database_name>
 db.createUser({user: "<username>", pwd: "<password>", roles: [{role: "readWrite", db: "<database_name>"}]})
-`
+```
 
